@@ -51,7 +51,8 @@ backend k8s-api-http-nginx-ingress
     option tcplog
     option tcp-check
     default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
-    server kube-master-1 192.168.5.101:32124 check
+    server kube-worker-1 192.168.5.201:32014 check
+    server kube-worker-2 192.168.5.202:32014 check
 
 ############## Configure HAProxy Secure Frontend #############
 frontend k8s-api-https-proxy-nginx-ingress
@@ -68,7 +69,8 @@ backend k8s-api-https-nginx-ingress
     option tcplog
     option tcp-check
     default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
-    server kube-master-1 192.168.5.101:30860 check
+    server kube-worker-1 192.168.5.201:32015 check
+    server kube-worker-2 192.168.5.202:32015 check
 
 ############## Configure HAProxy Unsecure Frontend #############
 #frontend k8s-api-http-proxy
