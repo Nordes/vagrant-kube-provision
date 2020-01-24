@@ -30,10 +30,10 @@ sudo certbot certonly --manual --preferred-challenges=dns --email you@yourdomain
 3. Then complete the challenge
 
 You will have the following files in the folder given within the output:
-* cert.pem *Important*
+* cert.pem **Important**
 * chain.pem
 * fullchain.pem
-* privkey.pem *Important*
+* privkey.pem **Important**
 * README
 
 Once this is done, connect to your k8s-master-1 (if not already done) and then create the secret:
