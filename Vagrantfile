@@ -11,6 +11,8 @@ NODE_IP_START = 200
 LB_IP_START = 50
 SHARED_KUBE_FOLDER = "./shared-vm-folder/"
 SHARED_VM_KUBE_FOLDER = "/opt/k8s-cluster/shared/"
+VAGRANT_COMMAND = ARGV[0]
+
 
 def add_basenode_settings(node, ipEnd)
         node.vm.synced_folder "#{SHARED_KUBE_FOLDER}", "#{SHARED_VM_KUBE_FOLDER}", create: true, group: "root", owner: "root"
@@ -22,26 +24,20 @@ def add_basenode_settings(node, ipEnd)
           s.args = ["enp0s8"]
         end
 
-        node.vm.provision "setup-dns",      type: "shell", :path => "ubuntu/base/update-dns.sh"
+        node.vm.provision "setup-dns",       type: "shell", :path => "ubuntu/base/update-dns.sh"
+######################
+# # If you want to start from ubuntu/bionic64 base image
 #        node.vm.provision "install-docker", type: "shell", :path => "ubuntu/k8s-base/install-k8s-req.sh"
-        node.vm.provision "setup-ip-route", type: "shell", :path => "ubuntu/k8s-base/setup-ip-route.sh" do |s|
+######################
+        node.vm.provision "setup-ip-route",  type: "shell", :path => "ubuntu/k8s-base/setup-ip-route.sh" do |s|
           s.args = [IP_NW + "#{ipEnd}"]
         end
 end
 
 Vagrant.configure("2") do |config|
-  # Every Vagrant development environment requires a box. You can search for
-  # boxes at https://vagrantcloud.com/search.
-  # config.vm.box = "base"
+
   #config.vm.box = "ubuntu/bionic64"
   config.vm.box = "Slach/kubernetes-docker"
-
-  # config.ssh.username = "kube"
-  # consig.ssh.password = "kube"
- 
-  # Disable automatic box update checking. If you disable this, then
-  # boxes will only be checked for updates when the user runs
-  # `vagrant box outdated`. This is not recommended.
   config.vm.box_check_update = false
 
   ###################################################
@@ -58,8 +54,9 @@ Vagrant.configure("2") do |config|
     loadbalancer.vm.network :private_network, ip: IP_NW + "#{LB_IP_START}"
     loadbalancer.vm.network "forwarded_port", guest: 22, host: 2701    
 
-    loadbalancer.vm.provision "setup-dns",     type: "shell", :path => "ubuntu/base/update-dns.sh"
-    loadbalancer.vm.provision "setup-haproxy", type: "shell", :path => "ubuntu/loadbalancer/install-haproxy.sh"
+    loadbalancer.vm.provision "setup-dns",       type: "shell", :path => "ubuntu/base/update-dns.sh"
+    loadbalancer.vm.provision "setup-kube-user", type: "shell", :path => "ubuntu/base/setup-kube-user.sh"
+    loadbalancer.vm.provision "setup-haproxy",   type: "shell", :path => "ubuntu/loadbalancer/install-haproxy.sh"
 
     loadbalancer.vm.network "forwarded_port", guest: 9000, host: 9000
     loadbalancer.vm.network "forwarded_port", guest: 6443, host: 6443
@@ -84,6 +81,11 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "kube-master-1" do |prime|
+      if VAGRANT_COMMAND == "ssh"
+        config.ssh.username = 'kube'
+        config.ssh.password = 'kube'
+      end
+
       prime.vm.provision "setup-cluster", type: "shell", :path => "ubuntu/k8s-master/install-kubeadm-prime.sh" do |s|
         s.args = [IP_NW + "#{MASTER_IP_START + 1}", "#{SHARED_VM_KUBE_FOLDER}"]
       end
@@ -91,6 +93,7 @@ Vagrant.configure("2") do |config|
       # Need to do ip route stuff if we use the weave, otherwise with flannel: https://github.com/coreos/flannel/blob/master/Documentation/troubleshooting.md#vagrant
       prime.vm.provision "setup-weave-cni", type: "shell",     :path => "ubuntu/k8s-master/install-weave-cni.sh"
       prime.vm.provision "setup-nginx-ingress", type: "shell", :path => "ubuntu/k8s-master/install-nginx-ingress.sh"
+      prime.vm.provision "setup-kube-user", type: "shell",     :path => "ubuntu/base/setup-kube-user.sh"
   end
 
   (2..NUM_MASTER_NODE).each do |i|
@@ -108,7 +111,7 @@ Vagrant.configure("2") do |config|
         node.vm.provider "virtualbox" do |vb|
             vb.name = "kube-worker-#{i}"
             vb.memory = 2024
-            vb.cpus = 1
+            vb.cpus = 2
         end
         node.vm.hostname = "kube-worker-#{i}"
 

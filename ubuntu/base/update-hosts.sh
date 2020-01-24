@@ -8,6 +8,9 @@ sed -e "s/^.*${HOSTNAME}.*/${ADDRESS} ${HOSTNAME} ${HOSTNAME}.local/" -i /etc/ho
 # remove ubuntu-bionic entry
 sed -e '/^.*ubuntu-bionic.*/d' -i /etc/hosts
 
+# $2 -> nb master
+# $3 -> nb workers
+
 cat >> /etc/hosts <<EOF
 
 192.168.5.101  kube-master-1
