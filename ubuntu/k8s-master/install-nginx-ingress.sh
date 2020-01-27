@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Follow https://docs.nginx.com/nginx-ingress-controller/installation/installation-with-manifests/
+# Most doc online use : https://kubernetes.github.io/ingress-nginx/deploy/#bare-metal
 
 sudo cat << EOF | kubectl create -f -
 apiVersion: v1
@@ -113,6 +114,8 @@ metadata:
   name: nginx-config
   namespace: nginx-ingress
 data:
+  client-max-body-size: "0"
+  # proxy-body-size: "0" # <--- should be valid but isn't.
 ---
 apiVersion: apiextensions.k8s.io/v1beta1
 kind: CustomResourceDefinition
