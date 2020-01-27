@@ -85,5 +85,16 @@ EOF
 
 Now, if you browse to your *https://nx.yourdomain.com* it should be working in HTTPS with a green "lock" for a valid certificate.
 
+## Gitlab - DevOps integration
+If you wish to use the devops integration, you will have to update the ConfigMap regarding the host resolution (`kube-lb`) in order to resolve the hostname we've given to our machines. This is mainly because we use a hostname instead of an IP address (192.168.5.50).
+
+_To be added before the prometeus line:_
+```yaml
+        hosts {
+           192.168.5.50 kube-lb
+           fallthrough
+        }
+```
+
 ## Futur part in the project
 1. I would like to make the `Vagrantfile` more configurable. Which mean, you could select the network by adding some option when running the vagrant file. This will allow to use either let's say `weave`, `flannel` or `calico`.
