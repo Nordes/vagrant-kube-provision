@@ -30,16 +30,16 @@ sudo certbot certonly --manual --preferred-challenges=dns --email you@yourdomain
 3. Then complete the challenge
 
 You will have the following files in the folder given within the output:
-* cert.pem **Important**
+* cert.pem 
 * chain.pem
-* fullchain.pem
+* fullchain.pem **Important**
 * privkey.pem **Important**
 * README
 
 Once this is done, connect to your k8s-master-1 (if not already done) and then create the secret:
 
 ```bash
-kubectl create secret tls yourdomain-tls-secret --cert=cert.pem --key=privkey.pem -n nginx-ingress
+kubectl create secret tls yourdomain-tls-secret --cert=fullchain.pem --key=privkey.pem -n nginx-ingress
 kubectl edit daemonset nginx-ingress -n nginx-ingress
 ```
 
