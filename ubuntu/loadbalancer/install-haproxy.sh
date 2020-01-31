@@ -22,6 +22,7 @@ listen stats
 frontend k8s-api-https-proxy
     bind :6443
     mode tcp
+    option tcplog
     tcp-request inspect-delay 5s
     tcp-request content accept if { req.ssl_hello_type 1 }
     default_backend k8s-api-https
@@ -30,7 +31,6 @@ frontend k8s-api-https-proxy
 backend k8s-api-https
     balance roundrobin
     mode tcp
-    option tcplog
     option tcp-check
     default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
     server kube-master-1 192.168.5.101:6443 check
@@ -40,6 +40,7 @@ backend k8s-api-https
 frontend k8s-api-http-proxy-nginx-ingress
     bind :80
     mode tcp
+    option tcplog
     tcp-request inspect-delay 5s
     tcp-request content accept if { req.ssl_hello_type 1 }
     default_backend k8s-api-http-nginx-ingress
@@ -48,7 +49,6 @@ frontend k8s-api-http-proxy-nginx-ingress
 backend k8s-api-http-nginx-ingress
     balance roundrobin
     mode tcp
-    option tcplog
     option tcp-check
     default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
     server kube-worker-1 192.168.5.201:32014 check
@@ -58,6 +58,7 @@ backend k8s-api-http-nginx-ingress
 frontend k8s-api-https-proxy-nginx-ingress
     bind :443
     mode tcp
+    option tcplog
     tcp-request inspect-delay 5s
     tcp-request content accept if { req.ssl_hello_type 1 }
     default_backend k8s-api-https-nginx-ingress
@@ -66,7 +67,6 @@ frontend k8s-api-https-proxy-nginx-ingress
 backend k8s-api-https-nginx-ingress
     balance roundrobin
     mode tcp
-    option tcplog
     option tcp-check
     default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100
     server kube-worker-1 192.168.5.201:32015 check
